@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "vector": "cpp",
+        "__threading_support": "cpp",
+        "locale": "cpp",
+        "new": "cpp",
+        "string": "cpp",
+        "typeinfo": "cpp"
+    }
+}
