@@ -94,10 +94,15 @@ void GA1::getFitness(){
 }
 
 void GA1::getAverMaxFitness(){
-    maximo = 0.0f;
+    if(minimizar) maximo = numeric_limits<float>::max();
+    else maximo = 0.0f;
     for(int i = 0; i < poblacion; i++){
         promedio += (float)fit[i];
-        maximo = max((float)fit[i], maximo);
+        if(minimizar){
+            maximo = min((float)fit[i], maximo);
+        }else{
+            maximo = max((float)fit[i], maximo);
+        }
     }
     promedio = (float)promedio/(float)poblacion;
     return;
@@ -105,10 +110,14 @@ void GA1::getAverMaxFitness(){
 
 vector<pair<string, int>> GA1::seleccion() {
     if(!minimizar) sort(valores.begin(), valores.end(), [this](const pair<string,int> & p1, const pair<string, int> & p2){
-        return (float)this->fitness(p1.second) > (float)this->fitness(p2.second);
+        float case1 = (float) this->fitness(p1.second)/(float)promedio;
+        float case2 = (float) this->fitness(p2.second)/(float)promedio;
+        return (int)case1 > (int)case2;
     });
     else sort(valores.begin(), valores.end(), [this](const pair<string,int> & p1, const pair<string, int> & p2){
-        return (float)this->fitness(p1.second) < (float)this->fitness(p2.second);
+        float case1 = (float) this->fitness(p1.second)/(float)promedio;
+        float case2 = (float) this->fitness(p2.second)/(float)promedio;
+        return (int)case1 < (int)case2;
     });
     vector<pair<string,int>> result(valores.begin(), valores.begin()+ nSeleccion);
     return result;
@@ -122,9 +131,12 @@ int GA1::reacalNumber(string binario){
 
 void GA1::corteMuta(vector<pair<string,int>> sel){
     vector<pair<string, int>> nValores;
-    
+    int cantSel = sel.size();
+    for(int i = 0; i< cantSel; i++){
+        nValores.push_back(sel[i]);
+    }
     int indMuta = rand() % poblacion;
-    for(int i = 0; i < poblacion-1; i++){
+    for(int i = 0; i < poblacion-nSeleccion; i++){
         pair<string,string> padre;
         string hijo;
         int i1 = rand() % nSeleccion;
@@ -170,9 +182,9 @@ void GA1::corteMuta(vector<pair<string,int>> sel){
 }
 int main(){
     GA1 algoritmo(
-        make_pair(0,31),
+        make_pair(0,17),
         4,
-        5,
+        10,
         2,
         3,
         true
@@ -180,10 +192,14 @@ int main(){
     algoritmo.generarPoblacion();
     algoritmo.getFitness();
     algoritmo.getAverMaxFitness();
+    for(int i = 0; i < algoritmo.poblacion; i++){
+        cout << algoritmo.valores[i].first << " :";
+        cout << algoritmo.valores[i].second << endl;
+    }
 
     cout << "Promedio: " << algoritmo.promedio << endl;
     cout << "Maximo: " << algoritmo.maximo << endl;
-    for(int k = 0; k < algoritmo.generaciones; k++){
+    for(int k = 1; k < algoritmo.generaciones; k++){
         // for(int i = 0; i < algoritmo.poblacion; i++){
         //     cout << algoritmo.valores[i].first << " :";
         //     cout << algoritmo.valores[i].second << endl;
