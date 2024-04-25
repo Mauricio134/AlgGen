@@ -22,6 +22,20 @@
         "unordered_map": "cpp",
         "format": "cpp",
         "tuple": "cpp",
-        "limits": "cpp"
+        "limits": "cpp",
+        "functional": "cpp",
+        "istream": "cpp",
+        "thread": "cpp",
+        "variant": "cpp",
+        "*.tcc": "cpp",
+        "memory": "cpp",
+        "utility": "cpp",
+        "ostream": "cpp",
+        "ratio": "cpp",
+        "map": "cpp",
+        "random": "cpp",
+        "bitset": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
     }
 }
