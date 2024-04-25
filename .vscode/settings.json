@@ -29,6 +29,13 @@
         "variant": "cpp",
         "*.tcc": "cpp",
         "memory": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "ostream": "cpp",
+        "ratio": "cpp",
+        "map": "cpp",
+        "random": "cpp",
+        "bitset": "cpp",
+        "queue": "cpp",
+        "stack": "cpp"
     }
 }
