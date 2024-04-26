@@ -91,6 +91,7 @@ void init() {
 
 
 int main(int argc, char** argv){
+    srand(time(NULL));
     float gen = 100.0f;
     float maxP = -1e9f;
     float maxM = -1e9f;
@@ -98,7 +99,7 @@ int main(int argc, char** argv){
     bool mini = false;
     int opt = 3;
     if(opt == 1){
-        GA1 algo1(nPoblacion,mini, make_pair(0,31));
+        GA1 algo1(nPoblacion,mini, make_pair(0,15));
         algo1.genPoblacion();
         for(int i = 0; i < algo1.nPobla; i++){
             cout << get<0>(algo1.poblacion[i]) << ": ";
@@ -152,8 +153,8 @@ int main(int argc, char** argv){
     }
     else if(opt == 2){
         vector<pair<int,int>> limits;
-        limits.push_back(make_pair(5,31));
-        limits.push_back(make_pair(5,200));
+        limits.push_back(make_pair(0,15));
+        limits.push_back(make_pair(0,15));
         GA2 algo2(nPoblacion,mini, limits);
         algo2.genPoblacion();
         for(int i = 0; i < algo2.nPobla; i++){
