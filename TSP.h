@@ -8,6 +8,7 @@
 #include <cmath>
 #include <ctime>
 #include <string>
+#include <stack>
 
 using namespace std;
 
@@ -26,8 +27,7 @@ public:
     map<string, pair<double,double>> grafo;
     TSP(int , int, int);
     void generarPoblacion();
-    void PMXmuta();
-    vector<string> PMX(TUPLE, TUPLE, int, int);    
+    void OXmuta();   
     double distanciaEuclidiana(int, int);
     double fitness(vector<string>);
     vector<string> getCamino();
@@ -45,9 +45,9 @@ TSP::TSP(int nP, int nPo, int i){
         randomInt[0] = rand();
         randomInt[1] = rand();
         double scaledX = static_cast<double>(randomInt[0]) / RAND_MAX;
-        double randomX = scaledX * 2.0f - 1.0f;
+        double randomX = scaledX * 1.6f - 0.8f;
         double scaledY = static_cast<double>(randomInt[1]) / RAND_MAX;
-        double randomY = scaledY * 2.0f - 1.0f;
+        double randomY = scaledY * 1.6f - 0.8f;
         grafo[to_string(i)] = make_pair(randomX, randomY);
     }
 }
@@ -95,90 +95,46 @@ void TSP::seleccion(){
     poblacion = nPoblacion;
 }
 
-vector<string> TSP::PMX(TUPLE p1, TUPLE p2, int c1, int c2){
-    vector<string> resultado(nPoints+1,"");
-    vector<string> i, j;
-    for(int k = c1; k <= c2; k++){
-        resultado[k] = get<0>(p1)[k];
-        bool presence = false;
-        for(int t = c1; t <= c2; t++){
-            if(get<0>(p2)[k] == get<0>(p1)[t]){
-                presence = true;
-                break;
-            }
-        }
-        if(!presence){
-            i.push_back(get<0>(p2)[k]);
-            j.push_back(get<0>(p1)[k]);
-        }
-    }
-    vector<string> padre1 = get<0>(p1);
-    vector<string> padre2 = get<0>(p2);
-    for(int k = 0; k < j.size(); k++){
-        for(int r = 0; r < padre2.size(); r++){
-            if(padre2[r] == j[k]){
-                if(r < c1 || r > c2){
-                    resultado[r] = i[k];
-                }
-                else{
-                    j[k] = padre1[r];
-                    k--;
-                }
-            }
-        }
-    }
-    for(int k = 0; k < resultado.size(); k++){
-        if(resultado[k] == ""){
-            resultado[k] = get<0>(p2)[k];
-        }
-    }
-    return resultado;
-}
-
-void TSP::PMXmuta(){
+void TSP::OXmuta(){
     vector<TUPLE> nPoblacion;
     for(int i = 0; i < nPobla; i++){
-        TUPLE padre1, padre2;
-        vector<string> hijo;
+        vector<string> padre1, padre2;
         int indice1 = rand()%nPobla;
         int indice2 = rand()%nPobla;
         while(indice2 == indice1) indice2 = rand()%nPobla;
-        int corte1 = 1 + rand()%(nPoints-1);
-        int corte2 = 1 + rand()%(nPoints-1);
-        while(corte2 <= corte1){
-            corte1 = 1 + rand()%(nPoints-1);
-            corte2 = 1 + rand()%(nPoints-1);
+        padre1 = get<0>(poblacion[indice1]);
+        padre2 = get<0>(poblacion[indice2]);
+        int tam = padre1.size();
+        vector<string> hijo(tam, " ");
+        //OX
+        int c1 = 1 + rand()%(tam-2);
+        int c2 = 1 + rand()%(tam-2);
+        while(c1 == c2) c2 = 1 + rand()%(tam-2);
+        if(c1 > c2) swap(c1,c2);
+        set<string> inter;
+        for(int j = c1; j <= c2; j++){
+            hijo[j] = padre1[j];
+            inter.insert(padre1[j]);
         }
-
-        padre1 = poblacion[indice1];
-        padre2 = poblacion[indice2];
-        hijo = PMX(padre1, padre2, corte1, corte2);
-        // cout << "Rango: " <<  corte1 << " " << corte2 << endl;
-        // for(int h = 0; h < hijo.size(); h++){
-        //     cout << hijo[h];
-        // }
-        // cout << endl;
-        vector<string> hijoMutado(corte2-corte1+1);
-        set<int> iteradores;
-        for(int j = 0; j < hijoMutado.size(); j++){
-            int r = corte1 + rand()%(hijoMutado.size());
-            while(iteradores.count(r)) r = corte1 + rand()%(hijoMutado.size());
-            // cout << "R: " << r << endl;
-            hijoMutado[j] = hijo[r];
-            // for(int h = 0; h < hijoMutado.size(); h++){
-            //     cout << hijoMutado[h];
-            // }
-            // cout << endl;
-            iteradores.insert(r);
+        stack<string> conjunto;
+        for(int j = c1; j <= c2; j++) if(!inter.count(padre2[j])) conjunto.push(padre2[j]);
+        for(int j = 1; j < c1; j++) if(!inter.count(padre2[j])) conjunto.push(padre2[j]);
+        for(int j = c2+1; j < tam-1; j++)if(!inter.count(padre2[j])) conjunto.push(padre2[j]);
+        for(int j = c2+1; j < tam-1; j++){
+            hijo[j] = conjunto.top();
+            conjunto.pop();
         }
-        for(int j = 0, k = corte1; j < hijoMutado.size(); j++, k++){
-            hijo[k] = hijoMutado[j];
+        for(int j = 1; j < c1; j++){
+            hijo[j] = conjunto.top();
+            conjunto.pop();
         }
-        // for(int h = 0; h < hijo.size(); h++){
-        //     cout << hijo[h];
-        // }
-        // cout << endl;
+        
+        for(int j = 0; j < hijo.size(); j++) if(hijo[j] == " ") hijo[j] = padre2[j];
         nPoblacion.push_back(make_tuple(hijo, 1.0/(1.0+fitness(hijo))));
+        int ale = rand()%nPoblacion.size();
+        vector<string> elegido = get<0>(nPoblacion[ale]);
+        swap(elegido[c1], elegido[c2]);
+        get<0>(nPoblacion[ale]) = elegido;
     }
     poblacion = nPoblacion;
 }
