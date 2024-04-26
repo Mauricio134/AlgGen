@@ -5,10 +5,13 @@
 #include <utility>
 #include <cmath>
 #include <random>
+#include <algorithm>
 
 using namespace std;
 
-int mul1[] = {1,-1};
+bool comp(const tuple<string, int, float>& a, const tuple<string, int, float>& b) {
+    return get<2>(a) > get<2>(b);
+}
 
 class GA1{
 public:
@@ -87,7 +90,6 @@ string GA1::getBinarios(int number){
 }
 
 void GA1::genPoblacion(){
-    srand(time(NULL));
     for(int i = 0; i < nPobla; i++){
         int num = limites.first + rand() % (limites.second -limites.first + 1);
         string binario = getBinarios(num);
@@ -105,24 +107,28 @@ float GA1::f(int x){
 
 void GA1::seleccion(){
     vector<tuple<string,int,float>> new_poblacion;
-    for(int i = 0; i < nPobla; i++){
+    sort(poblacion.begin(), poblacion.end(), comp);
+    new_poblacion.push_back(poblacion[0]);
+    vector<tuple<string,int,float>> prueba(poblacion.begin()+1, poblacion.end());
+    int tam = prueba.size();
+    for(int i = 0; i < tam; i++){
         vector<int> indices;
-        if(nPobla >= 4){
-            while(indices.size()<nPobla){
-                int valor = rand()%nPobla;
+        if(tam >= 4){
+            while(indices.size()<tam){
+                int valor = rand()%tam;
                 if(find(indices.begin(), indices.end(), valor) == indices.end()){
                     indices.push_back(valor);
                 }
             }
         }
-        else for(int i = 0; i < nPobla; i++) indices.push_back(rand()%nPobla);
+        else for(int i = 0; i < tam; i++) indices.push_back(rand()%tam);
 
         // indices.push_back(rand()%nPobla);
 
         // for(int i = 0; i < nPobla; i++) cout << indices[i] << " ";
         // cout << endl;
-        tuple<string,int,float> semi1 = (get<2>(poblacion[indices[0]]) < get<2>(poblacion[indices[1]])) ? poblacion[indices[1]] : poblacion[indices[0]];
-        tuple<string,int,float> semi2 = (get<2>(poblacion[indices[2]]) < get<2>(poblacion[indices[3]])) ? poblacion[indices[3]] : poblacion[indices[2]];
+        tuple<string,int,float> semi1 = (get<2>(prueba[indices[0]]) < get<2>(prueba[indices[1]])) ? prueba[indices[1]] : prueba[indices[0]];
+        tuple<string,int,float> semi2 = (get<2>(prueba[indices[2]]) < get<2>(prueba[indices[3]])) ? prueba[indices[3]] : prueba[indices[2]];
         tuple<string,int,float> fin = (get<2>(semi1) < get<2>(semi2)) ? semi2 : semi1;
 
         new_poblacion.push_back(fin);

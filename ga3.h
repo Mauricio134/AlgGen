@@ -8,7 +8,9 @@
 
 using namespace std;
 
-float mul3[] = {1.0f,-1.0f};
+bool comp2(const tuple<string,string, string,int,int, int,float>& a, const tuple<string,string, string,int,int, int,float>& b) {
+    return get<6>(a) < get<6>(b);
+}
 
 string get0(tuple<string,string, string,int,int, int,float> padre, int corte){
     return get<0>(padre).substr(0,corte);
@@ -116,7 +118,6 @@ string GA3::getBinarios(int number, int c){
 }
 
 void GA3::genPoblacion(){
-    srand(time(NULL));
     int num[3];
     string binario[3];
     for(int i = 0; i < nPobla; i++){
@@ -138,19 +139,22 @@ float GA3::f(int x, int y, int z){
 }
 
 void GA3::seleccion(){
-    srand(time(NULL));
     vector<tuple<string,string, string,int,int, int,float>> new_poblacion;
-    for(int i = 0; i < nPobla; i++){
+    sort(poblacion.begin(), poblacion.end(), comp2);
+    new_poblacion.push_back(poblacion[0]);
+    vector<tuple<string,string, string,int,int, int,float>> prueba(poblacion.begin()+1, poblacion.end());
+    int tam = prueba.size();
+    for(int i = 0; i < tam; i++){
         vector<int> indices;
-        if(nPobla >= 4){
-            while(indices.size()<nPobla){
-                int valor = rand()%nPobla;
+        if(tam >= 4){
+            while(indices.size()<tam){
+                int valor = rand()%tam;
                 if(find(indices.begin(), indices.end(), valor) == indices.end()){
                     indices.push_back(valor);
                 }
             }
         }
-        else for(int i = 0; i < nPobla; i++) indices.push_back(rand()%nPobla);
+        else for(int i = 0; i < nPobla; i++) indices.push_back(rand()%tam);
 
         // indices.push_back(rand()%nPobla);
 
@@ -158,9 +162,9 @@ void GA3::seleccion(){
         // cout << endl;
         // cout << "first match: " << indices[0] << " vs " << indices[1] << endl;
         // cout << "second match: " << indices[2] << " vs " << indices[3] << endl;
-        tuple<string,string, string,int,int, int,float> semi1 = (get<6>(poblacion[indices[0]]) < get<4>(poblacion[indices[1]])) ? poblacion[indices[1]] : poblacion[indices[0]];
-        tuple<string,string, string,int,int, int,float> semi2 = (get<6>(poblacion[indices[2]]) < get<4>(poblacion[indices[3]])) ? poblacion[indices[3]] : poblacion[indices[2]];
-        tuple<string,string, string,int,int, int,float> fin = (get<6>(semi1) < get<4>(semi2)) ? semi2 : semi1;
+        tuple<string,string, string,int,int, int,float> semi1 = (get<6>(prueba[indices[0]]) < get<6>(prueba[indices[1]])) ? prueba[indices[1]] : prueba[indices[0]];
+        tuple<string,string, string,int,int, int,float> semi2 = (get<6>(prueba[indices[2]]) < get<6>(prueba[indices[3]])) ? prueba[indices[3]] : prueba[indices[2]];
+        tuple<string,string, string,int,int, int,float> fin = (get<6>(semi1) < get<6>(semi2)) ? semi2 : semi1;
 
         new_poblacion.push_back(fin);
     }
@@ -177,7 +181,6 @@ int GA3::getNumber(string b){
 }
 
 void GA3::cruceMuta(){
-    srand(time(NULL));
     vector<tuple<string,string, string,int,int, int,float>> nuevoPobla;
     int indMuta = rand() % nPobla;
     for(int i = 0; i < nPobla; i++){
